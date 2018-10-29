@@ -1,0 +1,330 @@
+
+
+<p>
+  <label for="nR" 
+         style="display: inline-block; width: 240px; text-align: right">
+         red_radius = <span id="nRv">…</span>
+  </label>
+  <input type="range" min="1" max="200" id="nR">
+        <label>x1:<input type="text" id="x1"></label>
+      <label>y1:<input type="text" id="y1"></label>
+
+</p>
+
+<p>
+  <label for="nRadius1" 
+         style="display: inline-block; width: 240px; text-align: right">
+         blue_radius = <span id="nRadius-value1">…</span>
+  </label>
+  <input type="range" min="1" max="200" id="nRadius1">
+        <label>x2:<input type="text" id="x2"></label>
+      <label>y2:<input type="text" id="y2"></label>
+</p>
+<p>
+    <label for="score"
+           style="display: inline-block; width: 240px; text-align: right">
+        Minimum Score = <span id = "minScore">…</span>
+    </label>
+        <input type="range" min="50" max="100" id="score">
+    
+</p>
+
+<script src="https://d3js.org/d3.v5.min.js"></script>
+
+
+<body>
+
+
+
+
+    
+</body>
+
+<script src = "papaparse.min.js"></script>
+<script>
+  //for doc!
+//http://www.d3noob.org/2014/04/using-html-inputs-with-d3js.html ！！！！
+var allText;
+function readTextFile(file)
+{
+    var rawFile = new XMLHttpRequest();
+    rawFile.open("GET", file, false);
+    rawFile.onreadystatechange = function()
+    {
+        if(rawFile.readyState === 4)
+        {
+            if(rawFile.status === 200 || rawFile.status == 0)
+            {
+                allText = rawFile.responseText;
+                alert(allText);
+            }
+        }
+    }
+    rawFile.send(null);
+}
+
+readTextFile("restaurant_scores.csv");
+var parseResult = Papa.parse(allText)
+var objArray = parseResult["data"]
+var xPositions = []
+var yPositions = []
+var mapWidth = 750;
+var mapHeight = 750;
+console.log(objArray);
+// Set up projection that the map is using
+
+
+// Set up size
+
+
+// This is the mapping between <longitude, latitude> position to <x, y> pixel position on the map
+// projection is a function and it has an inverse:
+// projection([lon, lat]) returns [x, y]
+// projection.invert([x, y]) returns [lon, lat]
+
+// Add an SVG element to the DOM
+var svg;
+var projection;
+    
+svg = d3.select('body').append('svg')
+.attr('width', mapWidth)
+.attr('height', mapHeight);
+projection = d3.geoMercator()
+.center([-122.433701, 37.767683]) // San Francisco, roughly
+.scale(225000)
+.translate([mapWidth / 2, mapHeight / 2]);
+// Add SVG map at correct size, assuming map is saved in a subdirectory called `data`
+svg.append('image')
+  .attr('width', mapWidth)
+  .attr('height', mapHeight)
+  .attr('xlink:href', './sf-map.svg');
+d3.select('body').append('div')
+.attr('class', "row")
+.attr('id', "list");
+
+var x1 = -122.432;
+var y1 = 37.734;
+function updateScore(minScore)
+{
+    d3.select("#minScore").text(minScore);
+    d3.select("#score").property("value", minScore);
+    var circles = svg.selectAll("circle[r='1']").remove();
+    updateAll(minScore);
+}
+updateScore(55);
+
+var projectedLocation = projection([x1, y1]);
+var circle = svg.append('circle')
+  .attr("r",  55
+    )
+  .attr("id", "c1")
+  .attr('stroke', 'black') 
+  .attr('stroke-width' ,"1")
+  .style("fill",  "none") 
+  .attr('cx', projectedLocation[0])
+  .attr('cy', projectedLocation[1])
+  .style("opacity",0.2)
+  .style("fill", "#f46d43")
+  .call(d3.drag().on("drag", on_circle_drag));
+
+document.getElementById('x1').value = -122.432;
+document.getElementById('y1').value = 37.734;
+
+var x2 = -122.48;
+var y2 = 37.754;
+document.getElementById('x2').value = -122.48;
+document.getElementById('y2').value = 37.754;
+var projectedLocation1 = projection([x2, y2]);
+var circle1 = svg.append('circle')
+  .attr("r",  55
+    )
+  .attr("id", "c2")
+  .attr('stroke', 'black') 
+  .attr('stroke-width' ,"1")
+  .style("fill",  "none") 
+  .style("opacity",0.2)
+  .style("fill", "blue")
+  .attr('cx', projectedLocation1[0])
+  .attr('cy', projectedLocation1[1])
+  .call(d3.drag().on("drag", on_circle_drag1));
+
+function updateAll(minScore)
+{
+    var element = document.getElementById('list');
+    var resultString = "";
+    var prevName = ""
+    var pixel1 = []
+    var x1Test = document.getElementById('x1').value;
+    var y1Test = document.getElementById('y1').value;
+    pixel1.push(x1Test);
+    pixel1.push(y1Test);
+    pixel1 = projection(pixel1);
+    var r1Test = document.getElementById('nR').value;
+    var x2Test = document.getElementById('x2').value;
+    var y2Test = document.getElementById('y2').value;
+    var pixel2 = []
+    pixel2.push(x2Test);
+    pixel2.push(y2Test);
+    pixel2 = projection(pixel2);
+    x1Test = pixel1[0];
+    y1Test = pixel1[1];
+    x2Test = pixel2[0];
+    y2Test = pixel2[1];
+    
+    var r2Test = document.getElementById('nRadius1').value;
+    for(var i =  1; i < 5797; i++)
+    {
+        if(objArray[i][10] >= document.getElementById("score").value)
+        {
+            var projectedLocation = projection([objArray[i][5], objArray[i][4]])
+            if((projectedLocation[0] - x1Test) * (projectedLocation[0] - x1Test) + 
+              (projectedLocation[1] - y1Test) * (projectedLocation[1] - y1Test) <= r1Test * r1Test &&
+              (projectedLocation[0] - x2Test) * (projectedLocation[0] - x2Test) + 
+              (projectedLocation[1] - y2Test) * (projectedLocation[1] - y2Test) <= r2Test * r2Test)
+            {
+                
+                var circle = svg.append('circle')
+                .attr('cx', projectedLocation[0])
+                .attr('cy', projectedLocation[1])
+                .attr('r', 1)
+                .style("fill", "red");
+                
+                if(prevName == objArray[i][1])
+                {
+                    continue;
+                }
+                prevName = objArray[i][1];
+                resultString += " <div class='column' style='background-color:#ccc;'>\n<h2>";
+                resultString += objArray[i][1];
+                resultString += "</h2>\n<p>Address: "
+                resultString += objArray[i][2];
+                resultString += ";  Score: ";
+                resultString += objArray[i][10];
+                resultString += "</p>\n</div>\n"
+            }
+            else
+            {
+                var circle = svg.append('circle')
+                .attr('cx', projectedLocation[0])
+                .attr('cy', projectedLocation[1])
+                .attr('r', 1)
+                .style("color", "black");
+            }
+        }
+    }
+    
+    element.innerHTML = resultString;
+}
+    
+    
+    
+    
+    
+    
+
+function on_circle_drag(d) {
+  d3.select(this)
+  .attr("cx", d3.event.x)
+  .attr("cy", d3.event.y);
+
+  [long, lat] = projection.invert([d3.event.x, d3.event.y]);
+  document.getElementById('x1').value = long;
+  document.getElementById('y1').value = lat;
+    updateScore(document.getElementById("score").value)
+}
+
+function on_circle_drag1(d) {
+  d3.select(this)
+  .attr("cx", d3.event.x)
+  .attr("cy", d3.event.y);
+
+  [long, lat] = projection.invert([d3.event.x, d3.event.y]);
+  document.getElementById('x2').value = long;
+  document.getElementById('y2').value = lat;
+        updateScore(document.getElementById("score").value)
+
+}
+
+// when the input range changes update the circle 
+d3.select("#nR").on("input", function() {
+  update1(+this.value);
+});
+
+// Initial starting radius of the circle 
+update1(55);
+
+// update the elements
+function update1(nR) {
+
+  // adjust the text on the range slider
+  d3.select("#nRv").text(nR);
+  d3.select("#nR").property("value", nR);
+
+  // update the circle radius
+  d3.select("#c1") 
+    .attr("r", nR);
+    var minScore = document.getElementById('score').value;
+    updateScore(minScore);
+}
+
+
+// when the input range changes update the circle 
+d3.select("#nRadius1").on("input", function() {
+  update(+this.value);
+});
+
+// Initial starting radius of the circle 
+update(55);
+
+// update the elements
+
+function update(nRadius1) {
+
+  // adjust the text on the range slider
+  d3.select("#nRadius-value1").text(nRadius1);
+  d3.select("#nRadius1").property("value", nRadius1);
+
+  // update the circle radius
+  d3.select("#c2") 
+    .attr("r", nRadius1);
+    var minScore = document.getElementById("score").value
+        updateScore(minScore);
+ }
+
+d3.select("#score").on("input", function(){
+   updateScore(+this.value); 
+});
+
+    
+function updateSelectionScore(minScore)
+{
+    cutLowScore(minScore)
+}
+    
+function cutLowScore(minScore)
+{
+    xPositions = []
+    yPositions = []
+    projection = d3.geoMercator()
+      .center([-122.433701, 37.767683]) // San Francisco, roughly
+      .scale(225000)
+      .translate([mapWidth / 2, mapHeight / 2]);
+    for(var i = 1; i < 5797; i++)
+    {
+        xPositions.push(objArray[i][5])
+        yPositions.push(objArray[i][4])
+        if(objArray[i][10] >= minScore)
+        {
+            var projectedLocation = projection([xPositions[i-1], yPositions[i-1]]);
+            var circle = svg.append('circle')
+            .attr('cx', projectedLocation[0])
+            .attr('cy', projectedLocation[1])
+            .attr('r', 1);
+        }
+    }
+}
+    </script>
+
+<script>
+</script>
+
