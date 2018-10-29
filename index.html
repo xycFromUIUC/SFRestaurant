@@ -3,7 +3,7 @@
 <p>
   <label for="nR" 
          style="display: inline-block; width: 240px; text-align: right">
-         red_radius = <span id="nRv">…</span>
+         Red radius (mile) = <span id="nRv">…</span>
   </label>
   <input type="range" min="1" max="200" id="nR">
         <label>x1:<input type="text" id="x1"></label>
@@ -14,7 +14,7 @@
 <p>
   <label for="nRadius1" 
          style="display: inline-block; width: 240px; text-align: right">
-         blue_radius = <span id="nRadius-value1">…</span>
+         Blue radius (mile) = <span id="nRadius-value1">…</span>
   </label>
   <input type="range" min="1" max="200" id="nRadius1">
         <label>x2:<input type="text" id="x2"></label>
@@ -259,7 +259,7 @@ update1(55);
 function update1(nR) {
 
   // adjust the text on the range slider
-  d3.select("#nRv").text(nR);
+  d3.select("#nRv").text(nR * 2.9 / 200);
   d3.select("#nR").property("value", nR);
 
   // update the circle radius
@@ -283,7 +283,7 @@ update(55);
 function update(nRadius1) {
 
   // adjust the text on the range slider
-  d3.select("#nRadius-value1").text(nRadius1);
+  d3.select("#nRadius-value1").text(nRadius1 * 2.9 / 200);
   d3.select("#nRadius1").property("value", nRadius1);
 
   // update the circle radius
