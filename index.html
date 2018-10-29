@@ -69,6 +69,7 @@ var xPositions = []
 var yPositions = []
 var mapWidth = 750;
 var mapHeight = 750;
+console.log(objArray)
 // Set up projection that the map is using
 
 
@@ -148,6 +149,7 @@ var circle1 = svg.append('circle')
 
 function updateAll(minScore)
 {
+    console.log("runned!");
     var element = document.getElementById('list');
     var resultString = "";
     var prevName = ""
@@ -170,9 +172,11 @@ function updateAll(minScore)
     y2Test = pixel2[1];
     
     var r2Test = document.getElementById('nRadius1').value;
+    var currScore = document.getElementById("score").value - 5;
+    console.log(objArray[20][10]);
     for(var i =  1; i < 5797; i++)
     {
-        if(objArray[i][10] >= document.getElementById("score").value)
+        if(objArray[i][10] - 5 >= currScore)
         {
             var projectedLocation = projection([objArray[i][5], objArray[i][4]])
             if((projectedLocation[0] - x1Test) * (projectedLocation[0] - x1Test) + 
@@ -290,6 +294,8 @@ function update(nRadius1) {
  }
 
 d3.select("#score").on("input", function(){
+        console.log(+this.value)
+
    updateScore(+this.value); 
 });
 
